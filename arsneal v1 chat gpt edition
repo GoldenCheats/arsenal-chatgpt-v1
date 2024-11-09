@@ -1,0 +1,288 @@
+-- Create GUI
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "ESP_Gui"
+
+-- Frame to hold the settings
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 300, 0, 250)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 0.7
+frame.BorderSizePixel = 0
+
+-- Background Image for WWE Bloodline Theme
+local background = Instance.new("ImageLabel", frame)
+background.Size = UDim2.new(1, 0, 1, 0)
+background.Position = UDim2.new(0, 0, 0, 0)
+background.Image = "rbxassetid://YOUR_BLOODLINE_BACKGROUND_IMAGE_ASSET_ID" -- Put your WWE Bloodline image ID here
+background.BackgroundTransparency = 1
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Text = "ESP Settings"
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 20
+title.Font = Enum.Font.SourceSansBold
+
+-- ESP Toggle
+local espToggleLabel = Instance.new("TextLabel", frame)
+espToggleLabel.Size = UDim2.new(0, 200, 0, 30)
+espToggleLabel.Position = UDim2.new(0, 50, 0, 40)
+espToggleLabel.Text = "Enable ESP:"
+espToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+espToggleLabel.BackgroundTransparency = 1
+espToggleLabel.TextSize = 14
+
+local espToggle = Instance.new("TextButton", frame)
+espToggle.Size = UDim2.new(0, 50, 0, 30)
+espToggle.Position = UDim2.new(0, 200, 0, 40)
+espToggle.Text = "OFF"
+espToggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+-- ESP Color Picker
+local espColorLabel = Instance.new("TextLabel", frame)
+espColorLabel.Size = UDim2.new(0, 200, 0, 30)
+espColorLabel.Position = UDim2.new(0, 50, 0, 80)
+espColorLabel.Text = "ESP Color:"
+espColorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+espColorLabel.BackgroundTransparency = 1
+espColorLabel.TextSize = 14
+
+local espColor = Instance.new("TextButton", frame)
+espColor.Size = UDim2.new(0, 80, 0, 30)
+espColor.Position = UDim2.new(0, 200, 0, 80)
+espColor.Text = "Red"
+espColor.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+-- Team Check Toggle
+local teamCheckLabel = Instance.new("TextLabel", frame)
+teamCheckLabel.Size = UDim2.new(0, 200, 0, 30)
+teamCheckLabel.Position = UDim2.new(0, 50, 0, 120)
+teamCheckLabel.Text = "Enable Team Check:"
+teamCheckLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+teamCheckLabel.BackgroundTransparency = 1
+teamCheckLabel.TextSize = 14
+
+local teamCheckToggle = Instance.new("TextButton", frame)
+teamCheckToggle.Size = UDim2.new(0, 50, 0, 30)
+teamCheckToggle.Position = UDim2.new(0, 200, 0, 120)
+teamCheckToggle.Text = "OFF"
+teamCheckToggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+-- Variables to store settings
+local espEnabled = false
+local teamCheckEnabled = false
+local espColorValue = Color3.fromRGB(255, 0, 0)
+
+-- Function to toggle ESP visibility
+local function toggleESP()
+    espEnabled = not espEnabled
+    espToggle.Text = espEnabled and "ON" or "OFF"
+    espToggle.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+end
+
+-- Function to change ESP color
+local function changeESPColor(color)
+    if color == "Red" then
+        espColorValue = Color3.fromRGB(255, 0, 0)
+    elseif color == "Blue" then
+        espColorValue = Color3.fromRGB(0, 0, 255)
+    elseif color == "Green" then
+        espColorValue = Color3.fromRGB(0, 255, 0)
+    elseif color == "Yellow" then
+        espColorValue = Color3.fromRGB(255, 255, 0)
+    elseif color == "Purple" then
+        espColorValue = Color3.fromRGB(128, 0, 128)
+    end
+    espColor.BackgroundColor3 = espColorValue
+    espColor.Text = color
+end
+
+-- Function to toggle team check
+local function toggleTeamCheck()
+    teamCheckEnabled = not teamCheckEnabled
+    teamCheckToggle.Text = teamCheckEnabled and "ON" or "OFF"
+    teamCheckToggle.BackgroundColor3 = teamCheckEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+end
+
+-- Button Connections
+espToggle.MouseButton1Click:Connect(toggleESP)
+espColor.MouseButton1Click:Connect(function()
+    local currentColor = espColor.Text
+    if currentColor == "Red" then
+        changeESPColor("Blue")
+    elseif currentColor == "Blue" then
+        changeESPColor("Green")
+    elseif currentColor == "Green" then
+        changeESPColor("Yellow")
+    elseif currentColor == "Yellow" then
+        changeESPColor("Purple")
+    else
+        changeESPColor("Red")
+    end
+end)
+teamCheckToggle.MouseButton1Click:Connect(toggleTeamCheck)
+
+-- Modify hitboxes and enable ESP
+coroutine.resume(coroutine.create(function()
+    while wait(0.1) do
+        coroutine.resume(coroutine.create(function()
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= player and v.Character then
+                    -- Check team setting
+                    local isEnemy = not teamCheckEnabled or v.Team ~= player.Team
+
+                    -- Modify hitboxes and ESP for enemies
+                    if espEnabled and isEnemy then
+                        -- Hide and expand hitboxes
+                        local function hideHitbox(part)
+                            if part then
+                                part.CanCollide = false
+                                part.Transparency = 1  -- Fully invisible
+                                part.Size = Vector3.new(15, 15, 15)  -- Slightly larger dimensions
+                            end
+                        end
+
+                        hideHitbox(v.Character:FindFirstChild("RightUpperLeg"))
+                        hideHitbox(v.Character:FindFirstChild("LeftUpperLeg"))
+                        hideHitbox(v.Character:FindFirstChild("HeadHB"))
+                        hideHitbox(v.Character:FindFirstChild("HumanoidRootPart"))
+
+                        -- Simple ESP
+                        if not v.Character:FindFirstChild("ESPBox") then
+                            local espBox = Instance.new("BoxHandleAdornment", v.Character)
+                            espBox.Name = "ESPBox"
+                            espBox.Adornee = v.Character
+                            espBox.Size = Vector3.new(5, 7, 5)
+                            espBox.Transparency = 0.7
+                            espBox.ZIndex = 10
+                            espBox.Color3 = espColorValue
+                        end
+
+                        if not v.Character:FindFirstChild("NameTag") then
+                            local nameTag = Instance.new("BillboardGui", v.Character)
+                            nameTag.Name = "NameTag"
+                            nameTag.Size = UDim2.new(0, 100, 0, 40)
+                            nameTag.Adornee = v.Character.Head
+                            nameTag.AlwaysOnTop = true
+
+                            local label = Instance.new("TextLabel", nameTag)
+                            label.Size = UDim2.new(1, 0, 1, 0)
+                            label.BackgroundTransparency = 1
+                            label.Text = v.Name
+                            label.TextColor3 = espColorValue
+                            label.TextSize = 14
+                            label.Font = Enum.Font.SourceSansBold
+                        end
+                    elseif v.Character then
+                        -- Remove hitbox modifications and ESP from teammates
+                        for _, part in pairs({"RightUpperLeg", "LeftUpperLeg", "HeadHB", "HumanoidRootPart"}) do
+                            local bodyPart = v.Character:FindFirstChild(part)
+                            if bodyPart then
+                                bodyPart.Transparency = 0
+                                bodyPart.Size = Vector3.new(1, 1, 1)
+                                bodyPart.CanCollide = true
+                            end
+                        end
+
+                        if v.Character:FindFirstChild("ESPBox") then
+                            v.Character.ESPBox:Destroy()
+                        end
+
+                        if v.Character:FindFirstChild("NameTag") then
+                            v.Character.NameTag:Destroy()
+                        end
+                    end
+                end
+            end
+        end))
+    end
+end))
+
+
+
+-- Aimbot with "E" key
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local camera = game.Workspace.CurrentCamera
+
+local aimbotEnabled = false
+local aimbotTarget = nil
+local teamCheckEnabled = true
+local targetYThreshold = 0 -- Y-coordinate threshold to detect "underground" players
+local originalCameraDirection = camera.CFrame.LookVector -- Store original camera direction
+
+-- Function to get the closest player in the crosshair
+local function getClosestPlayerInCrosshair()
+    local closestPlayer = nil
+    local closestAngle = math.huge
+
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = v.Character.HumanoidRootPart
+            local screenPos, onScreen = camera:WorldToScreenPoint(humanoidRootPart.Position)
+
+            if onScreen then
+                local angle = (Vector2.new(screenPos.X, screenPos.Y) - UserInputService:GetMouseLocation()).Magnitude
+                if angle < closestAngle then
+                    closestAngle = angle
+                    closestPlayer = v
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- Function to aim at a specific player
+local function aimAtPlayer(target)
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = target.Character.HumanoidRootPart
+        local direction = (humanoidRootPart.Position - camera.CFrame.p).unit
+        camera.CFrame = CFrame.new(camera.CFrame.p, humanoidRootPart.Position)
+    end
+end
+
+-- Function to reset the aimbot target and camera direction
+local function resetAimbotTarget()
+    aimbotTarget = nil
+    aimbotEnabled = false
+    camera.CFrame = CFrame.new(camera.CFrame.Position, camera.CFrame.Position + originalCameraDirection)
+end
+
+-- Keybind to toggle aimbot on/off
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.E then
+        aimbotEnabled = not aimbotEnabled
+
+        if aimbotEnabled then
+            aimbotTarget = getClosestPlayerInCrosshair()
+            originalCameraDirection = camera.CFrame.LookVector -- Save current direction when aimbot is enabled
+        else
+            resetAimbotTarget()
+        end
+    end
+end)
+
+-- Aimbot Update Loop
+game:GetService("RunService").Heartbeat:Connect(function()
+    if aimbotEnabled and aimbotTarget and aimbotTarget.Character then
+        local humanoid = aimbotTarget.Character:FindFirstChild("Humanoid")
+        local humanoidRootPart = aimbotTarget.Character:FindFirstChild("HumanoidRootPart")
+
+        -- Reset target if the player dies, goes underground, or becomes invalid
+        if not humanoid or humanoid.Health <= 0 or not humanoidRootPart or humanoidRootPart.Position.Y < targetYThreshold then
+            resetAimbotTarget()
+        elseif teamCheckEnabled and aimbotTarget.Team == player.Team then
+            resetAimbotTarget()
+        else
+            aimAtPlayer(aimbotTarget)
+        end
+    end
+end)
